@@ -16,12 +16,15 @@ import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.fit.cssbox.layout.Box;
 import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.Viewport;
+import org.fit.vips.VipsBlock;
+import org.fit.vips.VisualStructure;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 /**
@@ -36,7 +39,7 @@ public final class VipsOutput {
 	private int _pDoC = 0;
 	private int _order = 1;
 	private String _filename = "VIPSResult";
-
+	//static int _filenum=0;
 	public VipsOutput() {
 	}
 
@@ -74,8 +77,8 @@ public final class VipsOutput {
 	 */
 	private void writeVisualBlocks(Element parentNode, VisualStructure visualStructure)
 	{
-		Element layoutNode = doc.createElement("LayoutNode");
-
+		Element layoutNode = doc.createElement("LayoutNode"); //DOM객체에 LayoutNode요소를 만들어주고
+		//visualStruce에서 정보를 가져다 넣어준다.
 		layoutNode.setAttribute("FrameSourceIndex", String.valueOf(visualStructure.getFrameSourceIndex()));
 		layoutNode.setAttribute("SourceIndex", visualStructure.getSourceIndex());
 		layoutNode.setAttribute("DoC", String.valueOf(visualStructure.getDoC()));
@@ -139,15 +142,15 @@ public final class VipsOutput {
 			// "stop" segmentation
 			if (visualStructure.getNestedBlocks().size() > 0)
 			{
-				String src = "";
-				String content = "";
+				String src = ""; //각 노드 속성들
+				String content = ""; //속성 값들
 				for (VipsBlock block : visualStructure.getNestedBlocks())
 				{
-					ElementBox elementBox = block.getElementBox();
+					ElementBox elementBox = block.getElementBox(); 
 
 					if (elementBox == null)
 						continue;
-
+					//각각의 노드들에서 xdiv, xspan있으면 xml에 넣어줘라. 여기가 찾아서 써주는 곳
 					if (!elementBox.getNode().getNodeName().equals("Xdiv") &&
 							!elementBox.getNode().getNodeName().equals("Xspan"))
 						src += getSource(elementBox.getElement());
@@ -156,12 +159,13 @@ public final class VipsOutput {
 
 					content += elementBox.getText() + " ";
 
-				}
+				}//값을  layoutNode에 넣어준다.
 				layoutNode.setAttribute("SRC", src);
 				layoutNode.setAttribute("Content", content);
 			}
-
+			
 			parentNode.appendChild(layoutNode);
+			
 		}
 	}
 
@@ -173,12 +177,12 @@ public final class VipsOutput {
 	public void writeXML(VisualStructure visualStructure, Viewport pageViewport)
 	{
 		try
-		{
+		{	//Document객체를 구하기 위해서는 DocumentBuilder가 필요하며, DocumentBuilder객체는 DocumentBuilderFactory에 의해 ㅁㄴ들어진다.
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 
-			doc = docBuilder.newDocument();
-			Element vipsElement = doc.createElement("VIPSPage");
+			doc = docBuilder.newDocument(); //visualStructure를 넣어줄 빈 Document객체를 만들어준다.
+			Element vipsElement = doc.createElement("VIPSPage"); //빈 Document객체형식의 VIPSPage라는 요소를 만들어주고 .
 
 			String pageTitle = pageViewport.getRootElement().getOwnerDocument().getElementsByTagName("title").item(0).getTextContent();
 
@@ -193,20 +197,21 @@ public final class VipsOutput {
 			vipsElement.setAttribute("neworder", "0");
 			vipsElement.setAttribute("order", String.valueOf(pageViewport.getOrder()));
 
-			doc.appendChild(vipsElement);
+			doc.appendChild(vipsElement);//VIPSPage의 기본 설정을 빈 Document객체에 넣어준다. 
 
-			writeVisualBlocks(vipsElement, visualStructure);
-
+			writeVisualBlocks(vipsElement, visualStructure); //visualStructure의 vipsvisual트리들을 써준다. 그래서 xml의 형식을 바꾸고싶으면 여기를 바꿔야한다.
+			//xml파일 만들기위해 변환 준비
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
 			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			DOMSource source = new DOMSource(doc);
 
-			if (_escapeOutput)
+			if (_escapeOutput)//변환 하라면
 			{
-				StreamResult result = new StreamResult(new File(_filename + ".xml"));
-				transformer.transform(source, result);
+				StreamResult result = new StreamResult(new File(_filename + ".xml")); //
+				transformer.transform(source, result); //xml파일 변환
+				
 			}
 			else
 			{
@@ -260,10 +265,23 @@ public final class VipsOutput {
 	 * Sets output filename
 	 * @param filename Filename
 	 */
+	public void setOutputFileName(String filename,String pagenum)
+	{
+		if (!filename.equals(""))
+		{	//10월 18일 추가 
+			//여기서 filename의 result 1~500을 1씩 늘려준다.
+			
+			_filename = filename +pagenum ;
+		}
+
+	}
+ 
 	public void setOutputFileName(String filename)
 	{
 		if (!filename.equals(""))
-		{
+		{	//10월 18일 추가 
+			//여기서 filename의 result 1~500을 1씩 늘려준다.
+			
 			_filename = filename;
 		}
 

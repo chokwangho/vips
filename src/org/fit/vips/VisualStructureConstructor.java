@@ -97,7 +97,7 @@ public class VisualStructureConstructor {
 		// in first iterations we try to find vertical separators before horizontal
 		if (_iteration < 4)
 		{
-			constructVerticalVisualStructure();
+			constructVerticalVisualStructure(); 
 			constructHorizontalVisualStructure();
 			constructVerticalVisualStructure();
 			constructHorizontalVisualStructure();
@@ -196,7 +196,7 @@ public class VisualStructureConstructor {
 	 */
 	private void constructVerticalVisualStructure()
 	{
-		// first run
+		// first run 수직적 구분자 찾아주고 구조 건설할거야..
 		if (_visualStructure == null)
 		{
 			VipsSeparatorDetector detector = null;
@@ -204,12 +204,12 @@ public class VisualStructureConstructor {
 			if (_graphicsOutput)
 				detector = new VipsSeparatorGraphicsDetector(_pageWidth, _pageHeight);
 			else
-				detector = new VipsSeparatorNonGraphicsDetector(_pageWidth, _pageHeight);
-
-			detector.setCleanUpSeparators(3);
+				detector = new VipsSeparatorNonGraphicsDetector(_pageWidth, _pageHeight); //페이지의 높이,너비 설정해주고
+			//기본 구분자 셋팅해주고, 기본 블록들과 추출한 비주얼 블록들을 설정하고
+			detector.setCleanUpSeparators(3); 
 			detector.setVipsBlock(_vipsBlocks);
 			detector.setVisualBlocks(_visualBlocks);
-			detector.detectVerticalSeparators();
+			detector.detectVerticalSeparators(); //수직적 구분자를 찾고
 			this._verticalSeparators = detector.getVerticalSeparators();
 			Collections.sort(_verticalSeparators);
 
@@ -340,7 +340,7 @@ public class VisualStructureConstructor {
 				else
 					bottomVisualStructure.addNestedBlock(vipsBlock);
 			}
-
+			//이걸하는 이유는
 			topVisualStructure = null;
 			bottomVisualStructure = null;
 		}
@@ -552,7 +552,7 @@ public class VisualStructureConstructor {
 		this._vipsBlocks = vipsBlocks;
 
 		_visualBlocks = new ArrayList<VipsBlock>();
-		findVisualBlocks(vipsBlocks, _visualBlocks);
+		findVisualBlocks(vipsBlocks, _visualBlocks); //가져온 블록들과 그의 자식블록들 중에 보이는 블록만 _visualBlocks에 넣어준다.
 
 	}
 

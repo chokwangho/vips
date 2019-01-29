@@ -131,7 +131,7 @@ public class VipsSeparatorGraphicsDetector extends JPanel implements VipsSeparat
 	 * @param vipsBlock Visual structure
 	 */
 	@Override
-	public void setVipsBlock(VipsBlock vipsBlock)
+	public void setVipsBlock(VipsBlock vipsBlock) 
 	{
 		this._vipsBlocks = vipsBlock;
 		_visualBlocks.clear();

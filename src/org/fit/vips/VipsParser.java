@@ -64,15 +64,15 @@ public class VipsParser {
 	 */
 	public void parse()
 	{
-		if (_viewport != null)
+		if (_viewport != null) //viewport가 있다면
 		{
-			this._vipsBlocks = new VipsBlock();
-			_visualBlocksCount = 0;
+			this._vipsBlocks = new VipsBlock(); //VipsBlock객체 생성, 처음에 웹페이지의 기본 Dom tree(child noe까지)들어가는 곳
+			_visualBlocksCount = 0; //블록 갯수 변수
 
-			constructVipsBlockTree(_viewport.getElementBoxByName("body", false), _vipsBlocks);
-			divideVipsBlockTree(_vipsBlocks);
+			constructVipsBlockTree(_viewport.getElementBoxByName("body", false), _vipsBlocks); // _vipsBlocks변수에다가 웹페이지의 <body>부분 블록을 얻어와서 처음 dom tree구조를 만들어서 넣어준다.
+			divideVipsBlockTree(_vipsBlocks); // 기본 Dom tree의 블록과 그 블록의 자식블록들을 나눌수 있는 것들은 나눠주고, DOC값 설정과 visual 블록인지 설정해준다.
 
-			getVisualBlocksCount(_vipsBlocks);
+			getVisualBlocksCount(_vipsBlocks); //기본 블록과 자식노드들의 visualBlock 카운트 업!!
 			//System.err.println(String.valueOf("We have " + _visualBlocksCount + " visual blocks."));
 		}
 		else
@@ -85,13 +85,13 @@ public class VipsParser {
 	 */
 	private void getVisualBlocksCount(VipsBlock vipsBlock)
 	{
-		if (vipsBlock.isVisualBlock())
-			_visualBlocksCount++;
+		if (vipsBlock.isVisualBlock()) // vipsBlock의 루트블록이 비주얼 블록이면
+			_visualBlocksCount++; //count++업
 
-		for (VipsBlock vipsBlockChild : vipsBlock.getChildren())
+		for (VipsBlock vipsBlockChild : vipsBlock.getChildren()) // 루트블록의 자식들이 
 		{
-			if (!(vipsBlockChild.getBox() instanceof TextBox))
-				getVisualBlocksCount(vipsBlockChild);
+			if (!(vipsBlockChild.getBox() instanceof TextBox)) //text블록이 아니면
+				getVisualBlocksCount(vipsBlockChild); // count++
 		}
 	}
 
@@ -139,39 +139,39 @@ public class VipsParser {
 	 */
 	private void divideVipsBlockTree(VipsBlock vipsBlock)
 	{
-		_currentVipsBlock = vipsBlock;
-		ElementBox elementBox = (ElementBox) vipsBlock.getBox();
+		_currentVipsBlock = vipsBlock; //매개변수에서 vipsBlock가져오기.
+		ElementBox elementBox = (ElementBox) vipsBlock.getBox(); //vipsBlock을 ElemnetBox타입으로 변환
 		//System.err.println(elementBox.getNode().getNodeName());
 		//System.out.println(elementBox.getText());
 
-		if (elementBox.getElement().getAttribute("id").equals("logosLine"))
+		if (elementBox.getElement().getAttribute("id").equals("logosLine")) //블록의 id속성에 logosLine이라는 값이 있으면 실행.
 		{
 			System.out.println();
 		}
 
-		// With VIPS rules it tries to determine if element is dividable
-		if (applyVipsRules(elementBox) && vipsBlock.isDividable() && !vipsBlock.isVisualBlock())
+		// With VIPS rules it tries to determine if element is dividable :vips rule을 이용해서 Element들을 나눌수 있는지 결정해라.
+		if (applyVipsRules(elementBox) && vipsBlock.isDividable() && !vipsBlock.isVisualBlock()) //applyVipsRules : 블록 추출하기전 블록 노드 룰에 적합하고 , 나눌수있는 블록인데, 보이는 블록이 아니면
 		{
 			// if element is dividable, let's divide it
-			_currentVipsBlock.setAlreadyDivided(true);
-			for (VipsBlock vipsBlockChild : vipsBlock.getChildren())
+			_currentVipsBlock.setAlreadyDivided(true); //블록이 나눠졌다는것을 체크해주고
+			for (VipsBlock vipsBlockChild : vipsBlock.getChildren())// vipsBlock의 **** 자식 블록들을
 			{
-				if (!(vipsBlockChild.getBox() instanceof TextBox))
-					divideVipsBlockTree(vipsBlockChild);
+				if (!(vipsBlockChild.getBox() instanceof TextBox)) //vipsBlock의 자식블록들이 TextBox의 인스턴스가 아니면 나눠라.<-규칙
+					divideVipsBlockTree(vipsBlockChild); //나눠줭
 			}
 		}
-		else
+		else //블록들이 보이는 블록이면
 		{
-			if (vipsBlock.isDividable())
+			if (vipsBlock.isDividable())// 그리고 나눌수 있으면
 			{
 				//System.err.println("Element " + elementBox.getNode().getNodeName() + " is visual block");
-				vipsBlock.setIsVisualBlock(true);
-				vipsBlock.setDoC(11);
+				vipsBlock.setIsVisualBlock(true); //비주얼블록이라고 셋팅하고
+				vipsBlock.setDoC(11); //Doc값을 11로 설정
 			}
 
-			if (!verifyValidity(elementBox))
+			if (!verifyValidity(elementBox)) //그런데 블록 노드들이 블록 추출하기전 룰에 적합하지 않으면
 			{
-				_currentVipsBlock.setIsVisualBlock(false);
+				_currentVipsBlock.setIsVisualBlock(false); //보이지 않는 노드로 설정
 			}
 			/*
 			if (vipsBlock.isVisualBlock())
@@ -370,7 +370,7 @@ public class VipsParser {
 	{
 		if (node instanceof TextBox)
 		{
-			if (!node.getText().equals(" "))
+			if (!node.getText().equals("혻"))
 			{
 				_cnt++;
 			}
@@ -694,7 +694,65 @@ public class VipsParser {
 
 		return false;
 	}
-
+	//10월 10일 추가
+	/**extend VIPS Rule One
+	 * Remove all the invalid nodes.
+	 * 
+	 */
+	private boolean extendruleOne(ElementBox node){
+		if(!isValidNode(node)){ //validnode가 아니라면 
+			//_currentVipsBlock.setIsDividable(false);
+			_currentVipsBlock.setIsVisualBlock(false);
+			
+		}
+		return false;
+	}
+	
+	/**extend VIPS Rule Two
+	 * If a node has only text node or invalid children, no block extracted
+	 */
+	private boolean extendruleTwo(ElementBox node){
+		
+		if(isTextNode(node)){
+			if(!hasValidChildrenNodes(node)){
+				_currentVipsBlock.setIsVisualBlock(false);
+			}
+		}
+		
+		return false;
+	}
+	
+	/**extend VIPS Rule Three
+	 * if node has only one child,(a) If child is a text node or virtual text node, then no block extracted.
+		(b) If child is line-break node, then same rules are applied to the child node.
+	 */
+	private boolean extendruleThree(ElementBox node){
+		
+		if (numberOfValidChildNodes(node) == 1){
+			if(isTextNode(node) || isVirtualTextNode(node) ){
+				_currentVipsBlock.setIsVisualBlock(false);
+			}
+			for (Box childNode : node.getSubBoxList())
+				if (childNode.isBlock()){
+					extendruleThree((ElementBox)childNode);
+					}
+		}
+		
+		return true;
+	}
+	/**
+	 * 
+	 * @param node
+	 * @return
+	 */
+	private boolean extendruleFour(ElementBox node){
+		
+		
+		return true;
+	}
+	
+	
+	//끝
 	/**
 	 * VIPS Rule One
 	 * <p>
@@ -970,7 +1028,7 @@ public class VipsParser {
 	 * VIPS Rule Seven
 	 * <p>
 	 * If the background color of this node is different from one of its
-	 * children’s, divide this node and at the same time, the child node with
+	 * children�셲, divide this node and at the same time, the child node with
 	 * different background color will not be divided in this round.
 	 * Set the DoC value (6-8) for the child node based on the &lt;html&gt;
 	 * tag of the child node and the size of the child node.
